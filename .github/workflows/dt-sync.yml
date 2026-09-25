@@ -1,0 +1,73 @@
+name: dt-sync
+
+# Daily: mirror pascalorg/editor main into `upstream-main`, then open (or refresh)
+# a PR that merges it into `main`. Because upstream files are never edited here
+# (see dt-protect), the merge cannot conflict.
+#
+# Requires: Settings -> Actions -> General -> "Allow GitHub Actions to create and
+# approve pull requests" enabled.
+
+on:
+  schedule:
+    - cron: '17 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: dt-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Fetch pascalorg/editor
+        run: |
+          git remote add upstream https://github.com/pascalorg/editor.git
+          git fetch --no-tags upstream main
+
+      - name: Mirror upstream-main (fast-forward only)
+        run: git push origin upstream/main:refs/heads/upstream-main
+
+      - name: Merge into a sync branch
+        id: merge
+        run: |
+          if git merge-base --is-ancestor upstream/main HEAD; then
+            echo "Already up to date."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          sha="$(git rev-parse --short upstream/main)"
+          branch="dt/sync-upstream"
+          git config user.name "dt-sync"
+          git config user.email "dt-sync@users.noreply.github.com"
+          git checkout -B "$branch"
+          git merge --no-ff --no-edit -m "Merge pascalorg/editor ${sha}" upstream/main
+          bash dt/scripts/protect.sh upstream/main
+          git push --force-with-lease origin "$branch"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+
+      - name: Open or update PR
+        if: steps.merge.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          branch='${{ steps.merge.outputs.branch }}'
+          sha='${{ steps.merge.outputs.sha }}'
+          if gh pr view "$branch" --json state -q .state 2>/dev/null | grep -q OPEN; then
+            gh pr edit "$branch" --title "Sync pascalorg/editor ${sha}"
+          else
+            gh pr create --base main --head "$branch" \
+              --title "Sync pascalorg/editor ${sha}" \
+              --body "Automated merge of pascalorg/editor main (${sha}). Upstream files are untouched by DigitalTwin, so this merge is conflict-free; CI verifies our layer still builds against it."
+          fi

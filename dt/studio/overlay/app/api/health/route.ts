@@ -1,4 +1,18 @@
+import { dbAs } from '@dt/db'
+
 export const dynamic = 'force-dynamic'
+
+const HEALTH_SUBJECT = { kind: 'system', id: 'health', org: null, caps: [] } as const
+
+async function databaseHealth() {
+  if (!process.env.DT_APP_DATABASE_URL) return { configured: false as const }
+  try {
+    const [row] = await dbAs(HEALTH_SUBJECT, (tx) => tx`select dt.current_subject() as subject`)
+    return { configured: true as const, reachable: row?.subject === 'system:health' }
+  } catch (error) {
+    return { configured: true as const, reachable: false, error: String(error) }
+  }
+}
 
 async function supabaseHealth() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -17,6 +31,6 @@ async function supabaseHealth() {
 }
 
 export async function GET() {
-  const supabase = await supabaseHealth()
-  return Response.json({ ok: true, service: 'dt-studio', supabase })
+  const [supabase, database] = await Promise.all([supabaseHealth(), databaseHealth()])
+  return Response.json({ ok: true, service: 'dt-studio', supabase, database })
 }

@@ -23,6 +23,15 @@ jobs:
     defaults:
       run:
         working-directory: dt
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - name: Mirrored patches match upstream
@@ -38,5 +47,9 @@ jobs:
       - run: bun run check
       - run: bun run check-types
       - run: bun run test
+      - name: Database migrations and RLS
+        env:
+          DT_TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+        run: bun run test:db
       - name: Build (includes type check)
         run: bun run build

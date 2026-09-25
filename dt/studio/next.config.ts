@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
   // resolve against it unchanged.
   outputFileTracingRoot: dtRoot,
   turbopack: { ...upstream.turbopack, root: dtRoot },
-  transpilePackages: [...(upstream.transpilePackages ?? []), '@dt/studio-ux'],
+  transpilePackages: [...(upstream.transpilePackages ?? []), '@dt/studio-ux', '@dt/db'],
   async headers() {
     return [
       {

@@ -194,6 +194,12 @@ This removes the identity domain's separate `authorizeSceneWrite(prevHashMap, ne
 
 `decide(subject, action, resource, ctx) → {allow, reasons, obligations{redact[], readOnlyCategories, requireStepUp}}`, together with `explain` and `CapabilitySheet`.
 
+**Account provisioning (decision).** Accounts are managed from the console (the panel), not self-served.
+- There is no public sign-up and no social login; Google is not used for now.
+- Admins create, invite, disable and delete users, and assign roles through the Better Auth `admin` plugin, behind `console.users.*` actions.
+- Users sign in with email or username and a password. Optional 2FA is available, and magic-link and reset mail is sent only to accounts that already exist.
+- `emailAndPassword.disableSignUp` is on, and the sign-up route is not exposed.
+
 **Unified action catalogue.** Parameters are written with `:`.
 
 | Area | Actions |
@@ -425,7 +431,8 @@ Each milestone deploys independently on Vercel as a reviewable PR set. Every mil
 
 - the RLS suite shows 0 anon rows;
 - the Better Auth surface test passes;
-- sign-in works (email, magic link, Google via oAuthProxy on a branch URL);
+- sign-in works on a branch URL (email/username + password, magic link for existing accounts);
+- self sign-up is rejected, and an admin-created user can sign in;
 - lockout is exact across 2 processes;
 - 1,000 duplicate-key jobs each run exactly once.
 
@@ -611,7 +618,7 @@ Each milestone deploys independently on Vercel as a reviewable PR set. Every mil
   - the projection revision equals the scene revision;
   - the outbox → webhook path delivers.
 - **End-to-end on a Vercel preview** (Playwright with a bypass token, fresh staging data): one golden journey across domains.
-  1. Sign in (Google via oAuthProxy).
+  1. An admin creates a user in the console; that user signs in.
   2. Create a project and build a warehouse via `layout.generate`.
   3. Collaborator spectates; a console relabel appears live; an MCP agent adds racks and the owner's undo keeps them.
   4. Admin locks the "structure" category; forged saves get 403.

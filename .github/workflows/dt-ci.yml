@@ -1,6 +1,6 @@
 name: dt-ci
 
-# Checks the DigitalTwin layer (dt/) against its own install root. Upstream CI
+# Checks the DigitalTwin layer (dt/) on top of the upstream workspace. Upstream CI
 # (ci.yml) keeps covering the pascalorg/editor tree.
 
 on:
@@ -34,15 +34,16 @@ jobs:
           --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - uses: actions/checkout@v4
-      - name: Mirrored patches match upstream
-        working-directory: .
-        run: bash dt/scripts/check-patches.sh
-      - name: Studio dependencies match apps/editor
-        working-directory: .
-        run: node dt/scripts/check-upstream-drift.mjs
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.3.14
+      # The studio runs on the upstream workspace, exactly like apps/editor.
+      - name: Upstream install (repo root, upstream's own lockfile)
+        working-directory: .
+        run: bun install --frozen-lockfile
+      - name: Build upstream packages apps/editor depends on
+        working-directory: .
+        run: bun run build --filter='editor^...'
       - run: bun install --frozen-lockfile
       - run: bun run check
       - run: bun run check-types
@@ -51,5 +52,5 @@ jobs:
         env:
           DT_TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
         run: bun run test:db
-      - name: Build (includes type check)
+      - name: Build studio
         run: bun run build

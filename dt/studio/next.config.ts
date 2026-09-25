@@ -4,14 +4,14 @@ import type { NextConfig } from 'next'
 // Generated from apps/editor/next.config.ts by scripts/sync-upstream.mjs.
 import upstream from './upstream.next.config'
 
-const dtRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
+// The studio runs on the upstream workspace install at the repo root (built
+// @pascal-app/* packages, plugins, patched three), exactly like apps/editor.
+const repoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), '../..')
 
 const nextConfig: NextConfig = {
   ...upstream,
-  // dt/ is its own install root; upstream's resolveAlias paths ('./node_modules/…')
-  // resolve against it unchanged.
-  outputFileTracingRoot: dtRoot,
-  turbopack: { ...upstream.turbopack, root: dtRoot },
+  outputFileTracingRoot: repoRoot,
+  turbopack: { ...upstream.turbopack, root: repoRoot },
   transpilePackages: [...(upstream.transpilePackages ?? []), '@dt/studio-ux', '@dt/db'],
   async headers() {
     return [

@@ -10,7 +10,7 @@
     "test": "bun test"
   },
   "peerDependencies": {
-    "@pascal-app/editor": "1.0.3",
+    "@pascal-app/editor": "*",
     "react": "^19"
   }
 }

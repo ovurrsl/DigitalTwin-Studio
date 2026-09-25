@@ -5,7 +5,6 @@
 //   apps/editor/{app,components,lib}  -> studio/{app,components,lib}   (tests skipped)
 //   apps/editor/public                -> studio/public
 //   apps/editor/next.config.ts        -> studio/upstream.next.config.ts
-//   styles/elevation.css              -> studio/app/upstream-elevation.css
 //   studio/overlay/**                 -> studio/**         (copied last; our files win)
 //   studio/static/**                  -> studio/public/**  (our public overrides)
 //
@@ -43,25 +42,14 @@ for (const dir of ['app', 'components', 'lib']) {
 }
 cpSync(path.join(upstreamApp, 'public'), path.join(studioDir, 'public'), { recursive: true })
 cpSync(path.join(upstreamApp, 'next.config.ts'), path.join(studioDir, 'upstream.next.config.ts'))
-cpSync(
-  path.join(repoRoot, 'styles/elevation.css'),
-  path.join(studioDir, 'app/upstream-elevation.css'),
-)
 
-// Turbopack's root is dt/, so upstream's repo-relative CSS paths are rewritten to
-// the same sources inside dt/node_modules.
+// dt/studio/app sits at the same depth as apps/editor/app, so upstream's
+// repo-relative @import/@source paths resolve unchanged. Tailwind skips gitignored
+// files during automatic source detection, and the synced tree is gitignored here,
+// so it is registered explicitly.
 const globalsPath = path.join(studioDir, 'app/globals.css')
-const globals = readFileSync(globalsPath, 'utf8')
-  .replace('@import "../../../styles/elevation.css";', '@import "./upstream-elevation.css";')
-  .replace(
-    /@source "\.\.\/\.\.\/\.\.\/packages\/([^/"]+)\/src";/g,
-    '@source "../../node_modules/@pascal-app/$1/src";',
-  )
-  .replace(/@source "\.\.\/\.\.\/\.\.\/node_modules\//g, '@source "../../node_modules/')
-// Tailwind skips gitignored files during automatic source detection, and the
-// synced app tree is gitignored here, so it is registered explicitly.
 const syncedSources = ['./', '../components', '../lib'].map((dir) => `@source "${dir}";`).join('\n')
-writeFileSync(globalsPath, `${globals}\n${syncedSources}\n`)
+writeFileSync(globalsPath, `${readFileSync(globalsPath, 'utf8')}\n${syncedSources}\n`)
 
 function overlay(from, to) {
   for (const name of readdirSync(from)) {

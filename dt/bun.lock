@@ -9,10 +9,19 @@
         "typescript": "^5.9.3",
       },
     },
+    "packages/studio-ux": {
+      "name": "@dt/studio-ux",
+      "version": "0.1.0",
+      "peerDependencies": {
+        "@pascal-app/editor": "1.0.3",
+        "react": "^19",
+      },
+    },
     "studio": {
       "name": "@dt/studio",
       "version": "0.1.0",
       "dependencies": {
+        "@dt/studio-ux": "workspace:*",
         "@pascal-app/core": "1.0.3",
         "@pascal-app/editor": "1.0.3",
         "@pascal-app/nodes": "1.0.3",
@@ -80,6 +89,8 @@
     "@dnd-kit/utilities": ["@dnd-kit/utilities@3.2.2", "", { "dependencies": { "tslib": "^2.0.0" }, "peerDependencies": { "react": ">=16.8.0" } }, "sha512-+MKAJEOfaBe5SmV6t34p80MMKhjvUz0vRrvVJbPT0WElzaOJ/1xs+D+KDv+tD/NE5ujfrChEcshd4fLn0wpiqg=="],
 
     "@dt/studio": ["@dt/studio@workspace:studio"],
+
+    "@dt/studio-ux": ["@dt/studio-ux@workspace:packages/studio-ux"],
 
     "@emnapi/runtime": ["@emnapi/runtime@1.11.3", "", { "dependencies": { "tslib": "^2.4.0" } }, "sha512-Xz4Tpyki7XyrpbUK1jR1AhdAdaXyhhY4lZ3neLodmhpuWfy2PAQN5B46sAiU4liOXGLkHypn/qU+jvfWSCYYLA=="],
 

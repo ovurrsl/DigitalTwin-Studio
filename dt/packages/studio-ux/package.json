@@ -1,0 +1,16 @@
+{
+  "name": "@dt/studio-ux",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "bun test"
+  },
+  "peerDependencies": {
+    "@pascal-app/editor": "1.0.3",
+    "react": "^19"
+  }
+}

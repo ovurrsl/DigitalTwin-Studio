@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: path.join(studioDir, '..'),
   turbopack: { root: path.join(studioDir, '..') },
   transpilePackages: [
+    '@dt/studio-ux',
     'three',
     '@pascal-app/core',
     '@pascal-app/viewer',

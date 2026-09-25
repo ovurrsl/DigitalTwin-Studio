@@ -58,7 +58,10 @@ const globals = readFileSync(globalsPath, 'utf8')
     '@source "../../node_modules/@pascal-app/$1/src";',
   )
   .replace(/@source "\.\.\/\.\.\/\.\.\/node_modules\//g, '@source "../../node_modules/')
-writeFileSync(globalsPath, globals)
+// Tailwind skips gitignored files during automatic source detection, and the
+// synced app tree is gitignored here, so it is registered explicitly.
+const syncedSources = ['./', '../components', '../lib'].map((dir) => `@source "${dir}";`).join('\n')
+writeFileSync(globalsPath, `${globals}\n${syncedSources}\n`)
 
 function overlay(from, to) {
   for (const name of readdirSync(from)) {

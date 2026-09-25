@@ -12,6 +12,8 @@ on:
       - 'dt/package.json'
       - 'dt/*/package.json'
       - 'dt/*/*/package.json'
+      - 'dt/patches/**'
+      - '.github/workflows/dt-lock.yml'
 
 permissions:
   contents: write

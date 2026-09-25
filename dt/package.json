@@ -5,10 +5,10 @@
     "studio"
   ],
   "scripts": {
-    "dev": "bun --cwd studio run dev",
-    "build": "bun --cwd studio run build",
+    "dev": "cd studio && bun run dev",
+    "build": "cd studio && bun run build",
     "check": "biome check --config-path=biome.dt.jsonc .",
-    "check-types": "bun --cwd studio run check-types",
+    "check-types": "cd studio && bun run check-types",
     "protect": "bash scripts/protect.sh"
   },
   "devDependencies": {

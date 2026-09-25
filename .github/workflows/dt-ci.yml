@@ -1,0 +1,33 @@
+name: dt-ci
+
+# Checks the DigitalTwin layer (dt/) against its own install root. Upstream CI
+# (ci.yml) keeps covering the pascalorg/editor tree.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dt-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  studio:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: dt
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - run: bun install --frozen-lockfile
+      - run: bun run check
+      - name: Build (includes type check)
+        run: bun run build

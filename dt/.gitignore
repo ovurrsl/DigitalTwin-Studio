@@ -1,0 +1,10 @@
+node_modules
+.next/
+next-env.d.ts
+*.tsbuildinfo
+.vercel
+.env*.local
+# Generated at build time from apps/editor/public (see studio/scripts/sync-public.mjs).
+studio/public/
+studio/app/upstream-theme.css
+studio/app/upstream-elevation.css

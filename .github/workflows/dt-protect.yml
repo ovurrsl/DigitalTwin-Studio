@@ -1,0 +1,25 @@
+name: dt-protect
+
+# Keeps the pascalorg/editor tree byte-identical: every change must live under
+# dt/ or in a .github/workflows/dt-*.yml file.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  protect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fetch upstream-main
+        run: git fetch --no-tags origin +refs/heads/upstream-main:refs/remotes/origin/upstream-main
+      - name: No upstream file may differ
+        run: bash dt/scripts/protect.sh origin/upstream-main

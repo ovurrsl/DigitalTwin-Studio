@@ -105,6 +105,31 @@ describe('row level security', () => {
     expect(row?.subject).toBeNull()
   })
 
+  test('access requests: anyone may file one, only the console may read them', async () => {
+    const submitter: Subject = { kind: 'system', id: 'access-request', org: null, caps: [] }
+    const file = (id: string, status = 'pending') =>
+      dbAs(
+        submitter,
+        (tx) => tx`
+          insert into dt.access_requests (id, full_name, email, username, department, requested_role, status)
+          values (${id}, 'Test', 'test@example.com', 'test', 'Ops', 'Viewer', ${status})`,
+        app,
+      )
+    await file('r1')
+    await expect(file('r2')).rejects.toThrow(/duplicate key/)
+    await expect(file('r3', 'approved')).rejects.toThrow(/row-level security/)
+    const submitterSees = await dbAs(submitter, (tx) => tx`select id from dt.access_requests`, app)
+    expect(submitterSees.length).toBe(0)
+    const consoleAdmin: Subject = {
+      kind: 'user',
+      id: 'admin',
+      org: null,
+      caps: ['console.users.manage'],
+    }
+    const consoleSees = await dbAs(consoleAdmin, (tx) => tx`select id from dt.access_requests`, app)
+    expect(consoleSees.map((r) => r.id)).toEqual(['r1'])
+  })
+
   test('Supabase API roles and dt_app cannot reach what they should not', async () => {
     await expect(
       owner.begin(async (tx) => {

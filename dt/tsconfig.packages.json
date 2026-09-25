@@ -12,7 +12,10 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "types": ["bun"]
+    "types": ["bun"],
+    "paths": {
+      "@panel/*": ["./packages/panel/src/*"]
+    }
   },
   "include": ["packages/*/src/**/*.ts", "packages/*/src/**/*.tsx"]
 }

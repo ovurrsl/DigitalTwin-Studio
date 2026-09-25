@@ -1,0 +1,23 @@
+{
+  "name": "@dt/identity",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@better-auth/utils": "0.4.2",
+    "@dt/mail": "workspace:*",
+    "better-auth": "1.7.6",
+    "pg": "^8.16.3",
+    "zod": ">=4.5.4 <4.6"
+  },
+  "devDependencies": {
+    "@dt/db": "workspace:*",
+    "@types/pg": "^8.15.5"
+  }
+}

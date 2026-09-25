@@ -46,10 +46,16 @@ cpSync(path.join(upstreamApp, 'next.config.ts'), path.join(studioDir, 'upstream.
 // dt/studio/app sits at the same depth as apps/editor/app, so upstream's
 // repo-relative @import/@source paths resolve unchanged. Tailwind skips gitignored
 // files during automatic source detection, and the synced tree is gitignored here,
-// so it is registered explicitly.
+// so it is registered explicitly. The panel's scoped tokens are imported after
+// upstream's imports (CSS requires @import before other rules).
 const globalsPath = path.join(studioDir, 'app/globals.css')
-const syncedSources = ['./', '../components', '../lib'].map((dir) => `@source "${dir}";`).join('\n')
-writeFileSync(globalsPath, `${readFileSync(globalsPath, 'utf8')}\n${syncedSources}\n`)
+const syncedSources = ['./', '../components', '../lib', '../../packages/panel/src']
+  .map((dir) => `@source "${dir}";`)
+  .join('\n')
+const globals = readFileSync(globalsPath, 'utf8').split('\n')
+const lastImport = globals.findLastIndex((line) => line.startsWith('@import '))
+globals.splice(lastImport + 1, 0, '@import "../../packages/panel/src/panel.css";')
+writeFileSync(globalsPath, `${globals.join('\n')}\n${syncedSources}\n`)
 
 function overlay(from, to) {
   for (const name of readdirSync(from)) {

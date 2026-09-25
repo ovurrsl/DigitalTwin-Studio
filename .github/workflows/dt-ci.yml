@@ -48,7 +48,7 @@ jobs:
       - run: bun run check
       - run: bun run check-types
       - run: bun run test
-      - name: Database migrations and RLS
+      - name: Database, RLS and auth
         env:
           DT_TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
         run: bun run test:db

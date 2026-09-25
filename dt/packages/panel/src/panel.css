@@ -1,0 +1,379 @@
+/*
+ * ovurrsl/panel's design tokens and base rules (from its src/app/globals.css),
+ * adapted to live inside the studio next to the editor:
+ *   - no @import 'tailwindcss' (the studio's globals.css already has it);
+ *   - every element rule is scoped to [data-dt-theme], the panel's subtree root,
+ *     so nothing leaks into the editor;
+ *   - colour names the editor also defines (popover, border, primary, …) are not
+ *     re-declared in @theme; inside the panel subtree the editor's underlying
+ *     variables point at the panel values instead, so one utility class resolves
+ *     correctly on both sides.
+ */
+
+:root {
+  /* Document-level rules (links, scrollbar) must always resolve, even before a
+     [data-dt-theme] ancestor exists — hence these fallbacks. */
+  --dt-fg: oklch(0.985 0 0);
+  --dt-brand: #ffc629;
+  --dt-scroll: rgba(255, 255, 255, 0.15);
+  --dt-wordmark: rgb(240, 240, 240);
+}
+
+[data-dt-theme="dark"] {
+  color-scheme: dark;
+  --dt-bg: oklch(0.205 0 0);
+  --dt-fg: oklch(0.985 0 0);
+  --dt-sidebar: oklch(0.205 0 0);
+  --dt-popover: oklch(0.205 0 0);
+  --dt-muted: oklch(0.269 0 0);
+  --dt-muted-fg: oklch(0.708 0 0);
+  --dt-accent: oklch(0.235 0 0);
+  --dt-primary: #ffc629;
+  --dt-primary-fg: #0a0a0a;
+  --dt-navy: #002d74;
+  --dt-hero: #0a1b3d;
+  --dt-grid-line: rgba(255, 255, 255, 0.16);
+  --dt-border: oklch(1 0 0 / 10%);
+  --dt-border-soft: oklch(1 0 0 / 6%);
+  --dt-input: oklch(1 0 0 / 15%);
+  --dt-ring: #ffc629;
+  --dt-destructive: oklch(0.704 0.191 22.216);
+  --dt-panel: #2c2c2e;
+  --dt-panel-hi: #3e3e3e;
+  --dt-hover: rgba(255, 255, 255, 0.08);
+  --dt-field: rgba(255, 255, 255, 0.04);
+  --dt-surface: rgba(255, 255, 255, 0.02);
+  --dt-grid: rgba(255, 255, 255, 0.06);
+  --dt-scroll: rgba(255, 255, 255, 0.15);
+  /* Placeholder text is still text. Was 0.55, which measured 2.98:1 on the field
+     surface — the sample URL in the webhook form was the one screen where a hint
+     the user is meant to read was the least readable thing on the page. */
+  --dt-placeholder: oklch(0.6 0 0);
+  --dt-wordmark: rgb(240, 240, 240);
+  --dt-brand: #ffc629;
+  /* Brand as *text*. On the dark theme the brand colour already clears 4.5:1,
+     so the two are the same value here; see the light block for why they split. */
+  --dt-brand-fg: #ffc629;
+  --dt-shell: #0a0a0a;
+  --dt-warn: #e0b44a;
+  --dt-ok: #4ade80;
+  --dt-e2:
+    0 0 0 1px rgba(0, 0, 0, 0.12), 0 1px 1px -0.5px rgba(0, 0, 0, 0.18),
+    0 3px 3px -1.5px rgba(0, 0, 0, 0.18);
+  --dt-e4:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 6px 6px -3px rgba(0, 0, 0, 0.18), 0 12px 12px -6px rgba(0, 0, 0, 0.18);
+}
+
+[data-dt-theme="light"] {
+  color-scheme: light;
+  --dt-bg: oklch(0.998 0 0);
+  --dt-fg: oklch(0.145 0 0);
+  --dt-sidebar: oklch(0.985 0 0);
+  --dt-popover: oklch(0.998 0 0);
+  --dt-muted: oklch(0.97 0 0);
+  /* Was 0.556 (#737373). Secondary copy in this UI runs down to 8 px, and at
+     that size #737373 measured 4.08:1 on the hover surface — under AA. Darkened
+     until the smallest muted text clears 4.5:1 on the lightest background it
+     ever sits on. */
+  --dt-muted-fg: oklch(0.52 0 0);
+  --dt-accent: oklch(0.97 0 0);
+  --dt-primary: #ffc629;
+  --dt-primary-fg: #0a0a0a;
+  --dt-navy: #002d74;
+  --dt-hero: oklch(0.965 0.012 265);
+  --dt-grid-line: rgba(0, 45, 116, 0.16);
+  --dt-border: oklch(0.922 0 0);
+  --dt-border-soft: oklch(0.95 0 0);
+  --dt-input: oklch(0.922 0 0);
+  --dt-ring: #002d74;
+  --dt-destructive: oklch(0.577 0.245 27.325);
+  --dt-panel: oklch(0.97 0 0);
+  --dt-panel-hi: oklch(0.93 0 0);
+  --dt-hover: rgba(0, 0, 0, 0.05);
+  --dt-field: oklch(0.985 0 0);
+  --dt-surface: oklch(0.985 0 0);
+  --dt-grid: rgba(0, 0, 0, 0.06);
+  --dt-scroll: rgba(0, 0, 0, 0.15);
+  /* Same rule, other direction: 0.72 was 2.2:1 on the light field surface. */
+  --dt-placeholder: oklch(0.55 0 0);
+  --dt-wordmark: rgb(0, 45, 116);
+  --dt-brand: #b98800;
+  /* Amber on a near-white surface is 1.35:1 — brand text was effectively
+     unreadable in this theme, and axe failed every screen that used it. This is
+     the same hue carried down to 5.4:1 on the lightest surface in the UI.
+     `--dt-brand` keeps its lighter value for dots, fills and borders, which
+     carry no text and are not held to the contrast rule. */
+  --dt-brand-fg: #7a5a00;
+  --dt-shell: oklch(0.94 0 0);
+  --dt-warn: #b07d0a;
+  --dt-ok: #1a7f45;
+  --dt-e2:
+    0 0 0 1px rgba(0, 0, 0, 0.06), 0 1px 1px -0.5px rgba(0, 0, 0, 0.06),
+    0 3px 3px -1.5px rgba(0, 0, 0, 0.06);
+  --dt-e4:
+    0 0 0 1px rgba(0, 0, 0, 0.06), 0 3px 3px -1.5px rgba(0, 0, 0, 0.06),
+    0 6px 6px -3px rgba(0, 0, 0, 0.06), 0 12px 12px -6px rgba(0, 0, 0, 0.06);
+}
+
+[data-dt-theme] {
+  --sidebar: var(--dt-sidebar);
+  --popover: var(--dt-popover);
+  --muted: var(--dt-muted);
+  --accent: var(--dt-accent);
+  --primary: var(--dt-primary);
+  --border: var(--dt-border);
+  --input: var(--dt-input);
+  --ring: var(--dt-ring);
+  --destructive: var(--dt-destructive);
+}
+
+@theme inline {
+  --color-bg: var(--dt-bg);
+  --color-fg: var(--dt-fg);
+  --color-muted-fg: var(--dt-muted-fg);
+  --color-primary-fg: var(--dt-primary-fg);
+  --color-navy: var(--dt-navy);
+  --color-hero: var(--dt-hero);
+  --color-border-soft: var(--dt-border-soft);
+  --color-panel: var(--dt-panel);
+  --color-panel-hi: var(--dt-panel-hi);
+  --color-hover: var(--dt-hover);
+  --color-field: var(--dt-field);
+  --color-surface: var(--dt-surface);
+  --color-shell: var(--dt-shell);
+  --color-brand: var(--dt-brand);
+  --color-brand-fg: var(--dt-brand-fg);
+  --color-warn: var(--dt-warn);
+  --color-ok: var(--dt-ok);
+  --color-wordmark: var(--dt-wordmark);
+
+  /* 6 px inputs/badges · 10 px buttons/lists · 14 px cards/dialogs */
+  --radius-field: 6px;
+  --radius-control: 10px;
+  --radius-card: 14px;
+
+  --shadow-e2: var(--dt-e2);
+  --shadow-e4: var(--dt-e4);
+
+  --animate-dt-fade: dtFade 0.25s ease;
+  --animate-dt-scale: dtScale 0.16s ease;
+  --animate-dt-drop: dtDrop 0.2s ease;
+  --animate-dt-shake: dtShake 0.4s ease;
+  --animate-dt-slide-r: dtSlideR 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-dt-spin: dtSpin 0.7s linear infinite;
+  --animate-dt-pulse: dtPulse 2s ease infinite;
+  --animate-dt-shimmer: dtShimmer 1.4s ease infinite;
+  --animate-dt-grid: dtGridScroll 45s linear infinite;
+}
+
+@keyframes dtFade {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes dtScale {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes dtDrop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes dtShake {
+  0%,
+  100% {
+    transform: none;
+  }
+  25% {
+    transform: translateX(-3px);
+  }
+  75% {
+    transform: translateX(3px);
+  }
+}
+@keyframes dtSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes dtShimmer {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+@keyframes dtPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+@keyframes dtSlideR {
+  from {
+    opacity: 0;
+    transform: translateX(26px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes dtDash {
+  from {
+    stroke-dashoffset: 220;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes dtGridScroll {
+  0% {
+    transform: perspective(500px) rotateX(60deg) translateY(0);
+  }
+  100% {
+    transform: perspective(500px) rotateX(60deg) translateY(50px);
+  }
+}
+
+[data-dt-theme] {
+  background: var(--dt-shell);
+  -webkit-font-smoothing: antialiased;
+  font-family: var(--font-barlow), system-ui, sans-serif;
+}
+
+[data-dt-theme] * {
+  box-sizing: border-box;
+}
+
+[data-dt-theme] input,
+[data-dt-theme] button,
+[data-dt-theme] textarea,
+[data-dt-theme] select {
+  font-family: inherit;
+}
+
+[data-dt-theme] select {
+  color-scheme: dark;
+}
+
+[data-dt-theme="light"] select {
+  color-scheme: light;
+}
+
+[data-dt-theme] select option,
+[data-dt-theme] select optgroup {
+  background-color: #18181b;
+  color: #f4f4f5;
+}
+
+[data-dt-theme="light"] select option,
+[data-dt-theme="light"] select optgroup {
+  background-color: #ffffff;
+  color: #18181b;
+}
+
+[data-dt-theme] a {
+  color: var(--dt-fg);
+  text-decoration: none;
+}
+[data-dt-theme] a:hover {
+  color: var(--dt-brand);
+}
+
+[data-dt-theme] input::placeholder,
+[data-dt-theme] textarea::placeholder {
+  color: var(--dt-placeholder);
+}
+
+[data-dt-theme] ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+[data-dt-theme] ::-webkit-scrollbar-track {
+  background: transparent;
+}
+[data-dt-theme] ::-webkit-scrollbar-thumb {
+  background: var(--dt-scroll);
+  border-radius: 9999px;
+}
+
+/* Horizontal strips scroll without a visible bar overlapping their content. */
+.dt-scroll-x {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.dt-scroll-x::-webkit-scrollbar {
+  display: none;
+  height: 0;
+}
+
+[data-dt-theme] button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+[data-dt-theme] button:focus-visible,
+[data-dt-theme] a:focus-visible,
+[data-dt-theme] input:focus-visible,
+[data-dt-theme] textarea:focus-visible,
+[data-dt-theme] select:focus-visible,
+[data-dt-theme] label:focus-visible,
+[data-dt-theme] [tabindex]:focus-visible {
+  outline: 2px solid var(--dt-ring);
+  outline-offset: 2px;
+}
+
+[data-dt-theme] button {
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    opacity 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.1s ease;
+}
+[data-dt-theme] button:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+[data-dt-theme] input,
+[data-dt-theme] select,
+[data-dt-theme] textarea {
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-dt-theme] *,
+  [data-dt-theme] *::before,
+  [data-dt-theme] *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

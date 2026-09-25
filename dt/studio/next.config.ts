@@ -12,7 +12,13 @@ const nextConfig: NextConfig = {
   ...upstream,
   outputFileTracingRoot: repoRoot,
   turbopack: { ...upstream.turbopack, root: repoRoot },
-  transpilePackages: [...(upstream.transpilePackages ?? []), '@dt/studio-ux', '@dt/db'],
+  transpilePackages: [
+    ...(upstream.transpilePackages ?? []),
+    '@dt/studio-ux',
+    '@dt/db',
+    '@dt/identity',
+    '@dt/mail',
+  ],
   async headers() {
     return [
       {

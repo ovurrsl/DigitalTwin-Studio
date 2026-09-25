@@ -20,7 +20,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@panel/*": ["../packages/panel/src/*"]
     }
   },
   "include": [

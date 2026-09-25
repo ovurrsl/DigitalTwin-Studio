@@ -1,6 +1,7 @@
 import { Pool } from 'pg'
 import { createDtAuth, type DtAuth } from './auth'
 import { readAuthEnv, resolveOrigins } from './env'
+import { poolConfig } from './pg-ssl'
 
 export {
   AUTH_BASE_PATH,
@@ -25,7 +26,7 @@ let instance: { auth: DtAuth; pool: Pool } | undefined
 export function getAuth(): { auth: DtAuth; pool: Pool } {
   if (instance) return instance
   const env = readAuthEnv()
-  const pool = new Pool({ connectionString: env.DT_AUTH_DATABASE_URL, max: 3 })
+  const pool = new Pool({ ...poolConfig(env.DT_AUTH_DATABASE_URL), max: 3 })
   const { baseURL, trustedOrigins } = resolveOrigins(env)
   instance = {
     auth: createDtAuth({ pool, secret: env.BETTER_AUTH_SECRET, baseURL, trustedOrigins }),

@@ -11,7 +11,9 @@
     "check": "biome check --config-path=biome.dt.jsonc .",
     "check-types": "tsc -p tsconfig.packages.json",
     "protect": "bash scripts/protect.sh",
-    "test": "cd packages/studio-ux && bun test"
+    "test": "cd packages/studio-ux && bun test",
+    "test:db": "cd packages/db && bun test",
+    "migrate": "cd packages/db && bun run migrate"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.16",

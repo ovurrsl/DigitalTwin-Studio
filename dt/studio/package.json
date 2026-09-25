@@ -12,6 +12,7 @@
     "start": "next start --port 3100"
   },
   "dependencies": {
+    "@dt/db": "workspace:*",
     "@dt/studio-ux": "workspace:*",
     "@iconify/react": "^6.0.2",
     "@mint/pascal-plugin": "github:mintdotgg/mint-pascal-plugin#902c546dbaece6b31455c0dc394afe6b9cd136fe",

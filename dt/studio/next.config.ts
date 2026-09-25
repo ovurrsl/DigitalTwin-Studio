@@ -17,6 +17,22 @@ const nextConfig: NextConfig = {
     '@pascal-app/nodes',
   ],
   images: { unoptimized: true },
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          // WebXR (VR) needs xr-spatial-tracking for our own origin only.
+          {
+            key: 'Permissions-Policy',
+            value: 'xr-spatial-tracking=(self), camera=(), microphone=(), geolocation=()',
+          },
+        ],
+      },
+    ]
+  },
 }
 
 export default nextConfig

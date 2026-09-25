@@ -2,14 +2,16 @@
   "name": "dt",
   "private": true,
   "workspaces": [
-    "studio"
+    "studio",
+    "packages/*"
   ],
   "scripts": {
     "dev": "cd studio && bun run dev",
     "build": "cd studio && bun run build",
     "check": "biome check --config-path=biome.dt.jsonc .",
     "check-types": "cd studio && bun run check-types",
-    "protect": "bash scripts/protect.sh"
+    "protect": "bash scripts/protect.sh",
+    "test": "cd packages/studio-ux && bun test"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.16",

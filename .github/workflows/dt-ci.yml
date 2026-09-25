@@ -5,7 +5,8 @@ name: dt-ci
 
 on:
   pull_request:
-    branches: [main]
+    # dt/** covers milestone PRs stacked on an earlier, unmerged milestone branch.
+    branches: [main, 'dt/**']
   push:
     branches: [main]
 
@@ -29,5 +30,6 @@ jobs:
           bun-version: 1.3.14
       - run: bun install --frozen-lockfile
       - run: bun run check
+      - run: bun run test
       - name: Build (includes type check)
         run: bun run build

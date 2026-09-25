@@ -13,6 +13,7 @@
     "check-types": "next typegen && tsc --noEmit"
   },
   "dependencies": {
+    "@dt/studio-ux": "workspace:*",
     "@pascal-app/core": "1.0.3",
     "@pascal-app/editor": "1.0.3",
     "@pascal-app/nodes": "1.0.3",

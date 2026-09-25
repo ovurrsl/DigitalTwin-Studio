@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
-import { ClientBootstrap } from './client-bootstrap'
-import './globals.css'
+import { DtProviders } from './dt-providers'
+import UpstreamLayout from './upstream-layout'
 
 export const metadata: Metadata = {
   title: 'DigitalTwin Studio',
@@ -10,10 +10,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="en">
-      <body className="font-sans">
-        <ClientBootstrap>{children}</ClientBootstrap>
-      </body>
-    </html>
+    <UpstreamLayout>
+      <DtProviders>{children}</DtProviders>
+    </UpstreamLayout>
   )
 }

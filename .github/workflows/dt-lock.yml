@@ -1,0 +1,46 @@
+name: dt-lock
+
+# Keeps dt/bun.lock in step with dt/**/package.json on milestone branches. When a
+# push changes a manifest, this resolves the lockfile on a runner (which can reach
+# the github: plugin tarballs) and commits it back to the same branch. Pushes made
+# with GITHUB_TOKEN do not start other workflows, so dt-ci runs on the next push.
+
+on:
+  push:
+    branches: ['dt/**']
+    paths:
+      - 'dt/package.json'
+      - 'dt/*/package.json'
+      - 'dt/*/*/package.json'
+      - 'dt/patches/**'
+      - '.github/workflows/dt-lock.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dt-lock-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - name: Resolve lockfile
+        working-directory: dt
+        run: bun install
+      - name: Commit lockfile if it changed
+        run: |
+          if git diff --quiet -- dt/bun.lock; then
+            echo "dt/bun.lock is up to date."
+            exit 0
+          fi
+          git config user.name "dt-lock"
+          git config user.email "dt-lock@users.noreply.github.com"
+          git add dt/bun.lock
+          git commit -m "chore(dt): refresh bun.lock"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

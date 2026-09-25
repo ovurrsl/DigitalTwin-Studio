@@ -1,11 +1,14 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import path from 'node:path'
+import { base32 } from '@better-auth/utils/base32'
+import { createOTP } from '@better-auth/utils/otp'
 import { migrate } from '@dt/db/migrate'
 import { Pool } from 'pg'
 import postgres from 'postgres'
 import { createDtAuth, type DtAuth } from './auth'
 import { AlreadyBootstrappedError, bootstrapAdmin } from './bootstrap'
 import { LOCKOUT, recordFailure } from './lockout'
+import { readRecoveryCodes, startTotpEnrolment } from './totp'
 
 const adminUrl = process.env.DT_TEST_DATABASE_URL
 if (!adminUrl) throw new Error('DT_TEST_DATABASE_URL is required for @dt/identity tests')
@@ -22,7 +25,7 @@ let auth: DtAuth
 
 function post(route: string, body: unknown, headers: Record<string, string> = {}) {
   return auth.handler(
-    new Request(`${BASE}/api/auth${route}`, {
+    new Request(`${BASE}/api/ba${route}`, {
       method: 'POST',
       headers: { 'content-type': 'application/json', origin: BASE, ...headers },
       body: JSON.stringify(body),
@@ -84,14 +87,14 @@ describe('bootstrap and sign-in', () => {
       username: 'Owner',
     })
     resetUrl = result.setPasswordUrl
-    expect(resetUrl).toContain('/reset-password/')
+    expect(resetUrl).toContain('/welcome?token=')
     await expect(
       bootstrapAdmin(auth, pool, { email: 'b@example.com', name: 'B', username: 'b' }),
     ).rejects.toBeInstanceOf(AlreadyBootstrappedError)
   })
 
   test('the link sets the password; email and username sign-in then work', async () => {
-    const token = new URL(resetUrl).pathname.split('/').pop()
+    const token = new URL(resetUrl).searchParams.get('token')
     const reset = await post('/reset-password', { newPassword: PASSWORD, token })
     expect(reset.status).toBe(200)
     expect((await signIn('owner@example.com', PASSWORD)).status).toBe(200)
@@ -149,5 +152,54 @@ describe('account status', () => {
     expect(res.status).toBe(403)
     await pool.query(`update "user" set status = 'active' where email = 'owner@example.com'`)
     expect((await signIn('owner@example.com', PASSWORD)).status).toBe(200)
+  })
+})
+
+describe('two-factor enrolment without re-entering the password', () => {
+  const cookieOf = (res: Response) =>
+    res.headers
+      .getSetCookie()
+      .map((c) => c.split(';')[0])
+      .join('; ')
+
+  test('enrol, confirm with a TOTP code, then recover with a panel-format code', async () => {
+    await pool.query('delete from dt_login_attempts')
+    const signedIn = await signIn('owner@example.com', PASSWORD)
+    expect(signedIn.status).toBe(200)
+    const { rows } = await pool.query<{ id: string }>(
+      `select id from "user" where email = 'owner@example.com'`,
+    )
+    const userId = rows[0]?.id as string
+
+    const { otpauthUri } = await startTotpEnrolment(auth, pool, {
+      id: userId,
+      email: 'owner@example.com',
+    })
+    const secret = new TextDecoder().decode(
+      base32.decode(new URL(otpauthUri).searchParams.get('secret') ?? ''),
+    )
+    const code = await createOTP(secret, { digits: 6, period: 30 }).totp()
+    const confirmed = await post(
+      '/two-factor/verify-totp',
+      { code },
+      { cookie: cookieOf(signedIn) },
+    )
+    expect(confirmed.status).toBe(200)
+
+    const codes = await readRecoveryCodes(auth, pool, userId)
+    expect(codes).toHaveLength(10)
+    expect(codes.every((c) => /^[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(c))).toBe(true)
+
+    const pending = await signIn('owner@example.com', PASSWORD)
+    expect(
+      ((await pending.clone().json()) as { twoFactorRedirect?: boolean }).twoFactorRedirect,
+    ).toBe(true)
+    const recovered = await post(
+      '/two-factor/verify-backup-code',
+      { code: codes[0] },
+      { cookie: cookieOf(pending) },
+    )
+    expect(recovered.status).toBe(200)
+    expect(await readRecoveryCodes(auth, pool, userId)).toHaveLength(9)
   })
 })

@@ -52,7 +52,7 @@ export async function bootstrapAdmin(
     (url) => {
       setPasswordUrl = url
     },
-    () => auth.api.requestPasswordReset({ body: { email, redirectTo: '/reset-password' } }),
+    () => auth.api.requestPasswordReset({ body: { email, redirectTo: '/welcome' } }),
   )
   if (!setPasswordUrl) throw new Error('Password reset link was not produced.')
   return { userId: user.id, setPasswordUrl }

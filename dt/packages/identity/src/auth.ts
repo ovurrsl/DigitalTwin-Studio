@@ -1,4 +1,5 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
+import { randomInt } from 'node:crypto'
 import { sendMail } from '@dt/mail'
 import { betterAuth } from 'better-auth'
 import { APIError, createAuthMiddleware, isAPIError } from 'better-auth/api'
@@ -10,6 +11,24 @@ import { clearFailures, lockKey, readLock, recordFailure } from './lockout'
 export const SYSTEM_ROLES = ['admin', 'supervisor', 'editor', 'viewer', 'address_manager'] as const
 
 const SIGN_IN_PATHS = new Set(['/sign-in/email', '/sign-in/username'])
+
+/** Better Auth's own routes; /api/auth/* belongs to the panel's API contract. */
+export const AUTH_BASE_PATH = '/api/ba'
+
+/** Recovery codes in the panel's XXXX-XXXX shape (no 0/O/1/I to keep them legible). */
+const RECOVERY_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+export function generateRecoveryCodes(count = 10): string[] {
+  const pick = () => RECOVERY_ALPHABET[randomInt(RECOVERY_ALPHABET.length)]
+  const group = () => Array.from({ length: 4 }, pick).join('')
+  return Array.from({ length: count }, () => `${group()}-${group()}`)
+}
+
+/** Account status codes the panel distinguishes; `invited` has no password yet. */
+const STATUS_ERRORS: Record<string, { code: string; status: 'FORBIDDEN' | 'UNAUTHORIZED' }> = {
+  suspended: { code: 'ACCOUNT_SUSPENDED', status: 'FORBIDDEN' },
+  inactive: { code: 'ACCOUNT_INACTIVE', status: 'FORBIDDEN' },
+  invited: { code: 'INVALID_EMAIL_OR_PASSWORD', status: 'UNAUTHORIZED' },
+}
 
 /** Routes never exposed: accounts are created from the console, and there is no social login. */
 export const DISABLED_PATHS = [
@@ -41,6 +60,7 @@ function signInIdentifier(body: unknown): string | undefined {
 export function createDtAuth({ pool, secret, baseURL, trustedOrigins }: DtAuthOptions) {
   return betterAuth({
     appName: 'DigitalTwin Studio',
+    basePath: AUTH_BASE_PATH,
     database: pool,
     secret,
     baseURL,
@@ -53,7 +73,13 @@ export function createDtAuth({ pool, secret, baseURL, trustedOrigins }: DtAuthOp
       minPasswordLength: 10,
       revokeSessionsOnPasswordReset: true,
       resetPasswordTokenExpiresIn: 60 * 60 * 24,
-      async sendResetPassword({ user, url }) {
+      async sendResetPassword({ user, token }) {
+        // Panel routes: a first password (new or bootstrapped account) lands on
+        // the welcome variant, everything else on the plain reset screen.
+        const firstPassword = (user as { mustChangePassword?: boolean }).mustChangePassword === true
+        const url = firstPassword
+          ? `${baseURL}/welcome?token=${encodeURIComponent(token)}`
+          : `${baseURL}/reset/${encodeURIComponent(token)}`
         resetLinkSink.getStore()?.(url)
         await sendMail({
           to: user.email,
@@ -72,7 +98,13 @@ export function createDtAuth({ pool, secret, baseURL, trustedOrigins }: DtAuthOp
     },
     plugins: [
       username({ minUsernameLength: 3, maxUsernameLength: 64 }),
-      twoFactor({ issuer: 'DigitalTwin Studio' }),
+      twoFactor({
+        issuer: 'DigitalTwin Studio',
+        backupCodeOptions: {
+          storeBackupCodes: 'encrypted',
+          customBackupCodesGenerate: () => generateRecoveryCodes(),
+        },
+      }),
       admin({ defaultRole: 'viewer', adminRoles: ['admin'] }),
     ],
     hooks: {
@@ -93,10 +125,11 @@ export function createDtAuth({ pool, secret, baseURL, trustedOrigins }: DtAuthOp
           'select status from auth_ba."user" where lower(email) = $1 or username = $1 limit 1',
           [identifier.toLowerCase()],
         )
-        if (rows[0] && rows[0].status !== 'active') {
-          throw new APIError('FORBIDDEN', {
-            code: 'ACCOUNT_INACTIVE',
-            message: 'This account is not active.',
+        const blocked = rows[0] && STATUS_ERRORS[rows[0].status]
+        if (blocked) {
+          throw new APIError(blocked.status, {
+            code: blocked.code,
+            message: 'This account cannot sign in.',
           })
         }
       }),

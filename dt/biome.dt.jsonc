@@ -16,5 +16,23 @@
     "ignoreUnknown": true,
     "includes": ["**", "!**/node_modules", "!**/.next", "!studio/public", "!docs"]
   },
-  "css": { "parser": { "tailwindDirectives": true } }
+  "css": { "parser": { "tailwindDirectives": true } },
+  "overrides": [
+    {
+      // Ported verbatim from ovurrsl/panel so later panel changes diff cleanly.
+      "includes": [
+        "packages/panel/src/components/**",
+        "packages/panel/src/lib/**",
+        "packages/panel/src/panel.css"
+      ],
+      "linter": {
+        "rules": {
+          "suspicious": { "noDocumentCookie": "off" },
+          "style": { "noNonNullAssertion": "off" },
+          "complexity": { "noImportantStyles": "off" },
+          "a11y": { "noSvgWithoutTitle": "off", "useAriaPropsSupportedByRole": "off" }
+        }
+      }
+    }
+  ]
 }

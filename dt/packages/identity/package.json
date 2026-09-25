@@ -4,13 +4,13 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./client": "./src/client.ts"
+    ".": "./src/index.ts"
   },
   "scripts": {
     "test": "bun test"
   },
   "dependencies": {
+    "@better-auth/utils": "0.4.2",
     "@dt/mail": "workspace:*",
     "better-auth": "1.7.6",
     "pg": "^8.16.3",

@@ -2,10 +2,19 @@ import { Pool } from 'pg'
 import { createDtAuth, type DtAuth } from './auth'
 import { readAuthEnv, resolveOrigins } from './env'
 
-export { createDtAuth, DISABLED_PATHS, type DtAuth, resetLinkSink, SYSTEM_ROLES } from './auth'
+export {
+  AUTH_BASE_PATH,
+  createDtAuth,
+  DISABLED_PATHS,
+  type DtAuth,
+  generateRecoveryCodes,
+  resetLinkSink,
+  SYSTEM_ROLES,
+} from './auth'
 export { AlreadyBootstrappedError, bootstrapAdmin } from './bootstrap'
 export { readAuthEnv, resolveOrigins } from './env'
-export { LOCKOUT } from './lockout'
+export { clearFailures, LOCKOUT, lockKey, readLock } from './lockout'
+export { readRecoveryCodes, startTotpEnrolment } from './totp'
 
 let instance: { auth: DtAuth; pool: Pool } | undefined
 

@@ -15,6 +15,7 @@
     "@dt/db": "workspace:*",
     "@dt/identity": "workspace:*",
     "@dt/mail": "workspace:*",
+    "@dt/panel": "workspace:*",
     "@dt/studio-ux": "workspace:*"
   }
 }

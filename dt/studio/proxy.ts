@@ -2,12 +2,18 @@ import { getSessionCookie } from 'better-auth/cookies'
 import { type NextRequest, NextResponse } from 'next/server'
 
 // Reachable without a session. Everything else (the editor, /scenes, the scene
-// APIs, the console) redirects to /login; route handlers still check the session
+// APIs, the console) redirects to the panel's /signin; route handlers still check the session
 // themselves, since a cookie's presence is not proof of a valid session.
 const PUBLIC_PREFIXES = [
-  '/login',
-  '/reset-password',
+  '/signin',
+  '/request',
+  '/welcome',
+  '/reset',
+  '/mfa',
   '/api/auth',
+  '/api/ba',
+  '/api/mfa',
+  '/api/requests',
   '/api/health',
   '/api/dt/bootstrap',
   '/terms',
@@ -20,9 +26,9 @@ export function proxy(request: NextRequest) {
     return NextResponse.next()
   if (getSessionCookie(request)) return NextResponse.next()
   if (pathname.startsWith('/api/')) return Response.json({ error: 'unauthorized' }, { status: 401 })
-  const login = new URL('/login', request.url)
-  login.searchParams.set('next', `${pathname}${search}`)
-  return NextResponse.redirect(login)
+  const signin = new URL('/signin', request.url)
+  signin.searchParams.set('redirect', `${pathname}${search}`)
+  return NextResponse.redirect(signin)
 }
 
 export const config = {

@@ -4,7 +4,9 @@ next-env.d.ts
 *.tsbuildinfo
 .vercel
 .env*.local
-# Generated at build time from apps/editor/public (see studio/scripts/sync-public.mjs).
+# Generated from apps/editor by studio/scripts/sync-upstream.mjs; our files live in studio/overlay.
+studio/app/
+studio/components/
+studio/lib/
 studio/public/
-studio/app/upstream-theme.css
-studio/app/upstream-elevation.css
+studio/upstream.next.config.ts

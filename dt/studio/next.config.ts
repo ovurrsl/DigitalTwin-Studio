@@ -1,22 +1,18 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { NextConfig } from 'next'
+// Generated from apps/editor/next.config.ts by scripts/sync-upstream.mjs.
+import upstream from './upstream.next.config'
 
-const studioDir = path.dirname(fileURLToPath(import.meta.url))
+const dtRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
 
 const nextConfig: NextConfig = {
-  // dt/ is its own install root; keep Next from resolving the upstream workspace above it.
-  outputFileTracingRoot: path.join(studioDir, '..'),
-  turbopack: { root: path.join(studioDir, '..') },
-  transpilePackages: [
-    '@dt/studio-ux',
-    'three',
-    '@pascal-app/core',
-    '@pascal-app/viewer',
-    '@pascal-app/editor',
-    '@pascal-app/nodes',
-  ],
-  images: { unoptimized: true },
+  ...upstream,
+  // dt/ is its own install root; upstream's resolveAlias paths ('./node_modules/…')
+  // resolve against it unchanged.
+  outputFileTracingRoot: dtRoot,
+  turbopack: { ...upstream.turbopack, root: dtRoot },
+  transpilePackages: [...(upstream.transpilePackages ?? []), '@dt/studio-ux'],
   async headers() {
     return [
       {

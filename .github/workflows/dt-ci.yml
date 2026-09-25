@@ -28,11 +28,15 @@ jobs:
       - name: Mirrored patches match upstream
         working-directory: .
         run: bash dt/scripts/check-patches.sh
+      - name: Studio dependencies match apps/editor
+        working-directory: .
+        run: node dt/scripts/check-upstream-drift.mjs
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.3.14
       - run: bun install --frozen-lockfile
       - run: bun run check
+      - run: bun run check-types
       - run: bun run test
       - name: Build (includes type check)
         run: bun run build

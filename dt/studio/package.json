@@ -13,6 +13,8 @@
   },
   "dependencies": {
     "@dt/db": "workspace:*",
+    "@dt/identity": "workspace:*",
+    "@dt/mail": "workspace:*",
     "@dt/studio-ux": "workspace:*"
   }
 }
